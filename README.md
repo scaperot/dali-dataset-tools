@@ -24,6 +24,13 @@ Output will look something like:</br>
     Paragraph: 1 ,  but you are in my head swimming forever in my head tangled in my dreams swimming forever -
     Paragraph: 2 ,  so i listen to the radio - and all the songs we used to know - - so i listen to the radio
 
+### Compounded example:</br>
+    python test_download_song.py          # downloads one song to audio/
+    python test_crop_song.py              # takes song and slices it into chunks on a sliding window saves each segment to a .wav file in audio/.
+    python test_get_cropped_transcript.py # aligns the transcript with each song and then plays a random .wav file that has been cropped and then displays transcripts to verify that the song and the transcript have been properly wrangled.
+    
+Note: All of these tests by default pick a specific song, but you could specify the song on the command line for each of the songs.  Type --help for options.
+
 ### Notes on files
 dali_helper.py - pool of most functions for doing various tasks.</br>
 
