@@ -237,7 +237,7 @@ def download_song(song_id, dali_info, audio_path, sample_rate):
     # remove mp3...
     print('Removing', basename + '.mp3')
     os.remove(basename + '.mp3')
-    return (audio_path+'/'+basename+'.wav')
+    return (basename+'.wav')
 
 def generate_wav_file_name(song_id, audio_path, id_num):
     '''
@@ -281,7 +281,7 @@ def save_samples_wav(song_id, audio_path, id_num, x, window_samples, sr):
     start = window_samples[0]
     term = window_samples[1]
     
-    print('Writing:', filename,',',window_samples)
+    #print('Writing:', filename,',',window_samples)
     sf.write(filename, x[start:term], sr)
     return filename
 
