@@ -1,5 +1,5 @@
 # dali-dataset-tools
-Helper scripts for modifying DALI datasets.  For more information on DALI see this page: https://github.com/gabolsgabs/DALI</br></br> </br></br>
+Helper scripts for modifying DALI datasets.  For more information on DALI see this page: https://github.com/gabolsgabs/DALI</br></br>
 
 
 ### Installation:
