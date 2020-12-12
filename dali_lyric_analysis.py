@@ -7,6 +7,7 @@ import DALI as dali_code
 from DALI import utilities
 
 import re
+import dali_helpers
 
 #using Gupta's lyric preprocessing function...
 #need to check licensing, etc.
@@ -31,23 +32,19 @@ def CleanUpLyrics(lyrics_raw):
 
 if __name__ == '__main__':
     sr = 22050
-    dali_path = os.path.abspath('DALI/')
-    dali_info = dali_code.get_info(dali_path + '/info/DALI_DATA_INFO.gz')
 
-    # ###############################################
-    #
-    print("Measure the length of lines for all songs...")
-    #  time to process 5358 songs: 232.2 seconds
-    #
-    # ###############################################
+    dali_path, audio_path, dali_info = dali_helpers.dali_setup()
+
     allsongfilenames = utilities.get_files_path(dali_path,'.gz')
     delta = []
     song_id = ''
-    n = len(allsongfilenames)
+    #n = len(allsongfilenames)
+    n = 500
     start = time.time()
     alphabet = []
     songs_with_numbers = []
-    for j in range(1000):
+    print('Collecting the DALI alphabet after filtering, and printing annotations with [ and ] in annotations.')
+    for j in range(n):
         #import song metadata
         song_id =  os.path.relpath(allsongfilenames[j],dali_path).split('.')[0]
         dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
@@ -60,6 +57,7 @@ if __name__ == '__main__':
 
         # go through each line and find unique characters and add them
         # to the alphabet
+
         for i in range(len(text)):
             tmp1 = CleanUpLyrics(text[i])
             if tmp1 == None:

@@ -14,9 +14,9 @@ import dali_helpers
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='print a song transcript')
-    parser.add_argument('-s','--song-id', required=False,type=str,default='3698c37beab64ec39196875d69720822',
-            help='DALI song id. default: 3698c37beab64ec39196875d69720822')
+    parser = argparse.argumentparser(description='print a song transcript')
+    parser.add_argument('-s','--song-id', required=false,type=str,default='3698c37beab64ec39196875d69720822',
+            help='dali song id. default: 3698c37beab64ec39196875d69720822')
 
     args = parser.parse_args()
     

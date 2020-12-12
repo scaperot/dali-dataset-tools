@@ -94,7 +94,9 @@ def download_convert_song(song_id, dali_data, dali_info, audio_path):
     print('Downloading song: ', song_id)
     # download random song to disk
     start = time.time()
-    # download_song(dali_info,audio_path,song_id)
+    
+    download_song(dali_info,audio_path,song_id)
+
     terminate = time.time()
     print('Download/converted 1 song in', terminate - start, ' seconds.')
 
