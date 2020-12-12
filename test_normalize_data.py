@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import os,time,sys,argparse
+import os,time,sys,argparse,librosa
 
 import pdb
 import DALI as dali_code
@@ -19,9 +19,19 @@ if __name__ == "__main__":
             help='dali song id. default: 3698c37beab64ec39196875d69720822')
 
     args = parser.parse_args()
-    
     song_id = args.song_id
-    dali_helpers.print_raw_transcript(song_id)
+
+    x,sr = librosa.load('audio/'+song_id+'.wav')
+
+    xnorm = dali_helpers.normalize_data(x)
+
+    plt.figure()
+    plt.subplot(211)
+    plt.plot(x)
+    plt.subplot(212)
+    plt.plot(xnorm)
+
+    plt.show(block=True)
 
 
 

@@ -176,7 +176,8 @@ def crop_song(song_id, audio_path, dali_entry, win_samples):
         audio/<song_id>_##.wav 
         where ## is the number of chunks in the song.
     '''
-    x, sr = librosa.load(audio_path + '/' + song_id + '.wav', sr=None)
+    xin, sr = librosa.load(audio_path + '/' + song_id + '.wav', sr=None)
+    x = normlize_data(xin)
 
     song_ndx = calc_window_for_song(x.shape[0],win_samples)
 
@@ -185,7 +186,16 @@ def crop_song(song_id, audio_path, dali_entry, win_samples):
     filename_list = []
     for i in range(l):
         filename_list.append( save_samples_wav(song_id, audio_path, i, x, (song_ndx[i,0],song_ndx[i,1]), sr) )
+
     return song_ndx, filename_list
+
+def normalize_data(data):
+    '''
+    adjust the data from 1 to -1.
+    '''
+    xmin = np.min(data)
+    xmax = np.max(data)
+    return (2*(data - xmin) / (xmax-xmin+1e-10)-1)
 
 def download_song(song_id, dali_info, audio_path, sample_rate):
     '''
