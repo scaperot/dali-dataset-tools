@@ -69,10 +69,17 @@ def print_raw_transcript(song_id):
     dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
     dali_entry = dali_data[song_id]
 
+    artist   = dali_entry.info['artist']
+    title    = dali_entry.info['title']
+    language = dali_entry.info['metadata']['language']
+    print(song_id,', title:',title,', artist:',artist,', language:',language)
+
     annot = dali_entry.annotations['annot']
     for i in range(len(annot['paragraphs'])):
         words = annot['paragraphs'][i]['text']
-        print('Paragraph:',i,', ',words)
+        time = annot['paragraphs'][i]['time']
+        time_str = '%2.f, %.2f' % (time[0],time[1])
+        print('Paragraph:',i,', ',time_str,', ',words)
 
 def get_cropped_transcripts(dali_annot,song_ndx,sample_rate):
     '''

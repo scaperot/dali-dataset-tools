@@ -22,6 +22,3 @@ if __name__ == "__main__":
     
     song_id = args.song_id
     dali_helpers.print_raw_transcript(song_id)
-
-
-
