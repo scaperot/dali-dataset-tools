@@ -28,9 +28,9 @@ def line_length_hist_secs(data):
     five_sec_thresh  = 1 - (data.shape[0]-np.where( data < 5 )[0].shape[0] ) / data.shape[0]
 
     title = "DALI Line Lengths: E[X] = %.2f,  min=%.2f, max=%.2f\nLines below 10s: %.1f %%, Lines below 5s: %.1f %%" % (mu, lmin, lmax,ten_sec_thresh*100,five_sec_thresh*100)
-    plt.title(title,fontsize=10)
-    plt.xlabel('Line Lengths (s)',fontsize=10)
-    plt.hist(data,bins=int(nbins),density=True,range=(0,20))
+    plt.title(title,fontsize=20)
+    plt.xlabel('Line Lengths (s)',fontsize=20)
+    plt.hist(data,color='black',bins=int(nbins),density=True,range=(0,20))
     plt.show(block=True)
 
 if __name__ == '__main__':
