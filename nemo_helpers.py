@@ -62,7 +62,7 @@ def preprocess_song(song_id, dali_path, audio_path, dali_info, nemo_manifest_fil
 
         # slice up the transcript for each cropped version of the song
         dali_annot = dali_entry.annotations['annot']
-        transcript_list = dali_helpers.get_cropped_transcripts(dali_annot,song_ndx,sample_rate)
+        transcript_list = dali_helpers.get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate)
 
         # save all cropped files in nemo format
         for i in range(len(transcript_list)):

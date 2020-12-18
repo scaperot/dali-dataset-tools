@@ -103,7 +103,7 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
     # 2. & is always space
     # 3. ` is always apostrophe
     if char_exists(lyrics,file_replace_list) and (replacement_song_list.count(song_id) > 0):
-        print('% or $ characters with literals!')
+        print('clean_up_lyrics: % or $ characters with literals!')
         for c in file_replace_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub(file_replace_dict[c],lyrics)
@@ -111,21 +111,21 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
 
 
     if char_exists(lyrics,global_replace_list):
-        print('& or ` with literals (might be some % and $ that should be spaces)')
+        print('clean_up_lyrics: & or ` with literals (might be some % and $ that should be spaces)')
         for c in global_replace_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub(global_replace_dict[c],lyrics)
 
     #check for remove list
     if char_exists(lyrics,remove_list):
-        print('remove characters!')
+        print('clean_up_lyrics: remove characters!')
         for c in remove_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub('',lyrics)
 
     #check for space list
     if char_exists(lyrics,space_list):
-        print('create characters with spaces!')
+        print('clean_up_lyrics: create characters with spaces!')
         for c in space_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub(' ',lyrics)
@@ -212,7 +212,7 @@ def print_raw_transcript(song_id,print_type='paragraphs'):
         time_str = '%2.f, %.2f' % (time[0],time[1])
         print(print_type,':',i,', ',time_str,', ',words)
 
-def get_cropped_transcripts(dali_annot,song_ndx,sample_rate):
+def get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate):
     '''
     Input:
     dali_annot (DALI object) - 
@@ -231,7 +231,7 @@ def get_cropped_transcripts(dali_annot,song_ndx,sample_rate):
         term  = song_ndx[j,1] / sample_rate
         window_secs  = np.array([start,term])
 
-        song_transcripts.append(get_transcript_for_window(dali_annot,window_secs))
+        song_transcripts.append(get_transcript_for_window(song_id,dali_annot,window_secs))
 
         #print('window:',window_secs, ', crop num:',j,', transcript:',song_transcript[j])
     return song_transcripts
@@ -248,29 +248,12 @@ def is_song_trainable(dali_entry):
     if language != 'english':
         print('is_song_trainable: language: ',language,', id:',dali_entry.info['id'],', title:',dali_entry.info['title'],'artist:',dali_entry.info['artist'])
         return False
+
+    song_id = dali_entry.info['id']
+    if char_exists(song_id, get_parenthetical_char_songs()):
+        print('is_song_trainable: trying to use a song with parenthetical annotations that are hard to groom and havent been implemented in the clean_up_lyrics method.')
+        return False
     
-    #annotation type is generic to all labels (AFAIK)
-    #
-    #annot_type = dali_data.annotations['type']
-    #if annot_type != 'horizontal':
-    #    return False
-    
-    #number of lines should be ok as long as the songs are 
-    # shuffled when performing training.  its possible 
-    # they are signifcantly longer than other songs, there
-    # would be some overfit to the distribution, but that
-    # would have to be pretty large.
-    #annot = dali_data.annotations['annot']['lines']
-    #if len(annot) > 100:
-    #    return False
-    #
-    # TODO: Possibly filter out more songs, like those that have long instrumental sections
-    # print(dali_data.annotations.keys())
-    # print(dali_data.annotations['annot_param'])
-    # print(dali_data.annotations)
-    # print(dali_data)
-    # print([(i['time'], i['text']) for i in annot])
-    # print([(i['time'], i['text']) for i in dali_code.annot2frames(annot, 1/22050)])
     return True
 
 def calc_window_for_song(total_length,win_samples):
@@ -423,7 +406,7 @@ def save_samples_wav(song_id, audio_path, id_num, x, window_samples, sr):
     sf.write(filename, x[start:term], sr)
     return filename
 
-def get_transcript_for_window(dali_annot,window_secs):
+def get_transcript_for_window(song_id, dali_annot,window_secs):
     '''
     Input:
     dali_annot (DALI object) - created using entry.annotations['annot']
@@ -441,8 +424,13 @@ def get_transcript_for_window(dali_annot,window_secs):
         # word ends   before the end   of window 
         if word_time[0] > window_secs[0] and word_time[1] < window_secs[1]:
             transcript += (word + ' ')
+    
+    song_list = {}
+    song_list['paren'] = []
+    song_list['replacement'] = []
+    transcript_clean = clean_up_lyrics(transcript,song_id,song_list)
 
-    return transcript
+    return transcript_clean
 
 
 
