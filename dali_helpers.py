@@ -1,7 +1,7 @@
 
 import soundfile as sf
 
-import os,time,sys,subprocess,librosa
+import os,time,sys,subprocess,librosa, csv, re
 import numpy as np
 
 import DALI as dali_code
@@ -29,6 +29,112 @@ def dali_setup():
     dali_info = dali_code.get_info(dali_path + '/info/DALI_DATA_INFO.gz')
     return dali_path, audio_path, dali_info
 
+def char_exists(input_str,alphabet):
+    '''
+    check to see if there is a special character in the string.
+    1. char.find - looks at string and reports the highest index 
+                   in input_str.  returns the size of alphabet.
+                   returns -1 for an index if the there is not an alphabet
+                   character of that type.
+    2. max - look for anything that is above -1 which indicates that a 
+             char is present.
+
+    Input:
+    input_str (string) - string under evaluation.
+
+    Return:
+    True/False
+    '''
+    return (np.max(np.char.find(input_str,alphabet)) >= 0)
+
+def get_parenthetical_char_songs():
+
+    paren_list = []
+    with open('analysis/dali_parenthetical_list.csv', newline='\n') as csvfile:
+        rows = list(csv.reader(csvfile, delimiter=','))
+
+    return rows[0] #only first row matters
+
+def get_replacement_char_songs():
+
+    paren_list = []
+    with open('analysis/dali_replacement_list.csv', newline='\n') as csvfile:
+        rows = list(csv.reader(csvfile, delimiter=','))
+
+    return rows[0] #only first row matters
+
+def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
+    '''
+    1. check for parenthetical candidate characters
+    2. check for replacement candidate characters
+    3. check for remove candidate characters
+    4. check for space candidate characters
+    '''
+    paren_song_list       = song_lists['paren']            # get_parenthetical_char_songs()
+    replacement_song_list = song_lists['replacement'] # get_replacement_char_songs()
+    
+    # add things to this list that are being used as parentheticals
+    paren_list = ['(',')','{','}','*','[',']']
+
+    # add chars to this list that will be required to be removed
+    remove_list= ['+']
+
+    # add chars to this list that will be required to be replaced
+    file_replace_dict={'$':' dollar ','%':' percent '}
+    file_replace_list = list(file_replace_dict.keys())
+    global_replace_dict={'&':' and ','`':"'"}
+    global_replace_list = list(global_replace_dict.keys())
+
+    
+    # add chars to this that will be required to make spaces
+    space_list = [',','-','.','?','!','"','(',')',':','_',';','*','[',']','{','}','<','>','/','#','$','%','@']
+
+    lyrics = dirty_lyrics
+    
+    #check if words contain parentheticals and song is just right, purge
+    #if char_exists(lyrics,paren_list) and (paren_song_list.count(song_id) > 0):
+        #TODO: print('purge parentheticals! and purge with spaces later')
+        #for c in file_replace_list:
+        #    regex = re.compile('['+c+']')
+        #    lyrics = regex.sub(file_replace_dict[c],lyrics)
+
+    #check for replace list
+    # 1. % and $ could be space if file not found
+    # 2. & is always space
+    # 3. ` is always apostrophe
+    if char_exists(lyrics,file_replace_list) and (replacement_song_list.count(song_id) > 0):
+        print('% or $ characters with literals!')
+        for c in file_replace_list:
+            regex = re.compile('['+c+']')
+            lyrics = regex.sub(file_replace_dict[c],lyrics)
+
+
+
+    if char_exists(lyrics,global_replace_list):
+        print('& or ` with literals (might be some % and $ that should be spaces)')
+        for c in global_replace_list:
+            regex = re.compile('['+c+']')
+            lyrics = regex.sub(global_replace_dict[c],lyrics)
+
+    #check for remove list
+    if char_exists(lyrics,remove_list):
+        print('remove characters!')
+        for c in remove_list:
+            regex = re.compile('['+c+']')
+            lyrics = regex.sub('',lyrics)
+
+    #check for space list
+    if char_exists(lyrics,space_list):
+        print('create characters with spaces!')
+        for c in space_list:
+            regex = re.compile('['+c+']')
+            lyrics = regex.sub(' ',lyrics)
+
+    #collapse spaces so there is only a single space between words/characters
+    regex = re.compile('\ +')
+    return regex.sub(' ',lyrics)
+     
+
 
 #using Gupta's lyric preprocessing function...
 #need to check licensing, etc.
@@ -55,7 +161,31 @@ def CleanUpLyrics(lyrics_raw):
     stripped_line = ' '.join(non_bracket_words)
     return stripped_line
 
-def print_raw_transcript(song_id):
+def get_songid_by_index(index):
+    dali_path, audio_path, dali_info = dali_setup()
+    allsongfilenames = utilities.get_files_path(dali_path,'.gz')
+    return os.path.relpath(allsongfilenames[index],dali_path).split('.')[0]
+
+def get_transcript(song_id, annot_index, annot_type='paragraphs'):
+
+    dali_path, audio_path, dali_info = dali_setup()
+
+    dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
+    dali_entry = dali_data[song_id]
+
+    annot = dali_entry.annotations['annot']
+    return annot[annot_type][annot_index]['text']
+
+
+def print_raw_transcript_by_index(index,print_type='paragraphs'):
+
+    dali_path, audio_path, dali_info = dali_setup()
+    allsongfilenames = utilities.get_files_path(dali_path,'.gz')
+    song_id =  os.path.relpath(allsongfilenames[index],dali_path).split('.')[0]
+    print_raw_transcript(song_id,print_type)
+
+
+def print_raw_transcript(song_id,print_type='paragraphs'):
     '''
     prints every DALI paragraph to the screen
 
@@ -66,6 +196,7 @@ def print_raw_transcript(song_id):
     N/A
     '''
     dali_path, audio_path, dali_info = dali_setup()
+
     dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
     dali_entry = dali_data[song_id]
 
@@ -75,11 +206,11 @@ def print_raw_transcript(song_id):
     print(song_id,', title:',title,', artist:',artist,', language:',language)
 
     annot = dali_entry.annotations['annot']
-    for i in range(len(annot['paragraphs'])):
-        words = annot['paragraphs'][i]['text']
-        time = annot['paragraphs'][i]['time']
+    for i in range(len(annot[print_type])):
+        words = annot[print_type][i]['text']
+        time = annot[print_type][i]['time']
         time_str = '%2.f, %.2f' % (time[0],time[1])
-        print('Paragraph:',i,', ',time_str,', ',words)
+        print(print_type,':',i,', ',time_str,', ',words)
 
 def get_cropped_transcripts(dali_annot,song_ndx,sample_rate):
     '''
