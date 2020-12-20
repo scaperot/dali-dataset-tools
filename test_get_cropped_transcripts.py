@@ -9,11 +9,12 @@ import DALI as dali_code
 from DALI import utilities
 
 import dali_helpers
+import nemo_helpers
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='calculate all windows based on 10.2268s window with a step thats half the size, find the words for a DALI generated transcript for song ID 3698c37beab64ec39196875d69720822 (assuming that songs are already in audio/ directory.')
-    parser.add_argument('--song-id', required=False,type=str,default='',
+    parser.add_argument('-s','--song-id', required=False,type=str,default='',
             help='DALI song id.  default: '', example: 3698c37beab64ec39196875d69720822' )
     
     args = parser.parse_args()
@@ -43,7 +44,7 @@ if __name__ == "__main__":
 
     tstart = time.time()
   
-    tlist = dali_helpers.get_cropped_transcripts(dali_annot,song_ndx,sample_rate)
+    tlist,timing_list = dali_helpers.get_cropped_transcripts(song_id,dali_annot,song_ndx,sample_rate)
 
     tend = time.time()
     print('Time to process one song:',tend-tstart)
@@ -55,6 +56,13 @@ if __name__ == "__main__":
     for i in range(len(tlist)):
         print('selected segment:',k,', segment:',i,', transcript:',tlist[i])
     #if song is in the audio directory, play it.
-    filename  = 'audio/'+song_id + '_'+str(k_str)+'.wav'
+    filename  = 'audio/'+song_id + '_'+k_str+'.wav'
     subprocess.call(['aplay', filename])
+
+
+    print('write word onset timing to audio/')
+    # save all cropped files in nemo format
+    for i in range(len(timing_list)):
+        i_str = str(i).zfill(3)
+        nemo_helpers.append_timing('audio/'+song_id+'_'+i_str+'.wav',timing_list[i])
 

@@ -221,20 +221,24 @@ def get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate):
             m windows that were created with crop_song
 
     Return:
-    song_transcripts (list)
+    song_transcripts (list), song_timing (list) is a list of lists with word onset timing associated with each transcript
     '''
     #find the words and times in an array for faster access...?  i'm not sure if its faster.
     mcrops = song_ndx.shape[0]
     song_transcripts = []
+    song_timing = []
     for j in range(mcrops):
         start = song_ndx[j,0] / sample_rate
         term  = song_ndx[j,1] / sample_rate
         window_secs  = np.array([start,term])
 
-        song_transcripts.append(get_transcript_for_window(song_id,dali_annot,window_secs))
+
+        transcript, timing_list =  get_transcript_for_window(song_id,dali_annot,window_secs)
+        song_transcripts.append(transcript)
+        song_timing.append(timing_list)
 
         #print('window:',window_secs, ', crop num:',j,', transcript:',song_transcript[j])
-    return song_transcripts
+    return song_transcripts, song_timing
 
 def is_song_trainable(dali_entry):
     '''
@@ -413,9 +417,10 @@ def get_transcript_for_window(song_id, dali_annot,window_secs):
     window_secs (tuple) - (start of window in secs,end of window in secs)
     
     Return:
-    transcript (string)
+    transcript (string), word onset timing (list of floats)
     '''
     transcript = ''
+    onset_timing = []
     for i in range(len(dali_annot['words'])):
         #find first full onset word
         word = dali_annot['words'][i]['text']
@@ -424,13 +429,14 @@ def get_transcript_for_window(song_id, dali_annot,window_secs):
         # word ends   before the end   of window 
         if word_time[0] > window_secs[0] and word_time[1] < window_secs[1]:
             transcript += (word + ' ')
+            onset_timing.append( word_time[0] )
     
     song_list = {}
     song_list['paren'] = []
     song_list['replacement'] = []
     transcript_clean = clean_up_lyrics(transcript,song_id,song_list)
 
-    return transcript_clean
+    return transcript_clean, onset_timing
 
 
 

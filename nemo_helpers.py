@@ -25,6 +25,30 @@ TODO: For Prediction
 
 
 
+def append_timing(audio_filename,timing_list):
+    '''
+    Input:
+    audio_filename (string) - filename of the audio file
+    timing_list (list <float>) - word onset list
+
+    1. basename - removes .wav from filename
+    2. writes to basename.wordonset.txt (jamendolyric format)
+    '''
+    if audio_filename[-4:] != '.wav':
+        print('append_timing: error, do not support other file types.')
+        return False
+
+    base_filename = audio_filename[:-4]
+    txt_filename  = base_filename + '.wordonset.txt'
+    
+    f = open(txt_filename,'w')
+    for i in timing_list:
+        txt = '%.2f\n' % (i)
+        f.write(txt)
+    f.close()
+    
+    return
+
 def append_transcript_nemo(json_filename,audio_filename,duration,transcript):
     '''
     append_transcript: save in nemo manifest format
@@ -62,11 +86,12 @@ def preprocess_song(song_id, dali_path, audio_path, dali_info, nemo_manifest_fil
 
         # slice up the transcript for each cropped version of the song
         dali_annot = dali_entry.annotations['annot']
-        transcript_list = dali_helpers.get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate)
+        transcript_list, timing_list = dali_helpers.get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate)
 
         # save all cropped files in nemo format
         for i in range(len(transcript_list)):
             append_transcript_nemo(nemo_manifest_filename,filename_list[i],win_size,transcript_list[i])
+            append_timing(filename_list[i],timing_list[i])
 
         return True
 
