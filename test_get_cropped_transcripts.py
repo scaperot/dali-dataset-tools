@@ -49,20 +49,22 @@ if __name__ == "__main__":
     tend = time.time()
     print('Time to process one song:',tend-tstart)
 
+    print('Write word onset timing to audio/')
+    # save all cropped files in nemo format
+    for i in range(len(timing_list)):
+        i_str = str(i).zfill(3)
+        nemo_helpers.append_timing('audio/'+song_id+'_'+i_str+'.wav',timing_list[i])
     ncrops = song_ndx.shape[0]
     k = np.random.randint(ncrops)
     k_str = str(k).zfill(3)
 
     for i in range(len(tlist)):
         print('selected segment:',k,', segment:',i,', transcript:',tlist[i])
+    
     #if song is in the audio directory, play it.
-    filename  = 'audio/'+song_id + '_'+k_str+'.wav'
-    subprocess.call(['aplay', filename])
+    #filename  = 'audio/'+song_id + '_'+k_str+'.wav'
+    #subprocess.call(['aplay', filename])
 
 
-    print('write word onset timing to audio/')
-    # save all cropped files in nemo format
-    for i in range(len(timing_list)):
-        i_str = str(i).zfill(3)
-        nemo_helpers.append_timing('audio/'+song_id+'_'+i_str+'.wav',timing_list[i])
+
 

@@ -209,7 +209,7 @@ def print_raw_transcript(song_id,print_type='paragraphs'):
     for i in range(len(annot[print_type])):
         words = annot[print_type][i]['text']
         time = annot[print_type][i]['time']
-        time_str = '%2.f, %.2f' % (time[0],time[1])
+        time_str = '%.2f, %.2f' % (time[0],time[1])
         print(print_type,':',i,', ',time_str,', ',words)
 
 def get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate):
@@ -233,7 +233,7 @@ def get_cropped_transcripts(song_id, dali_annot,song_ndx,sample_rate):
         window_secs  = np.array([start,term])
 
 
-        transcript, timing_list =  get_transcript_for_window(song_id,dali_annot,window_secs)
+        transcript, timing_list, _ =  get_transcript_for_window(song_id,dali_annot,window_secs,j)
         song_transcripts.append(transcript)
         song_timing.append(timing_list)
 
@@ -410,17 +410,41 @@ def save_samples_wav(song_id, audio_path, id_num, x, window_samples, sr):
     sf.write(filename, x[start:term], sr)
     return filename
 
-def get_transcript_for_window(song_id, dali_annot,window_secs):
+def get_window_offset(num,sample_rate=22050):
     '''
+    '''
+    if (num % 2) == 0:
+        offset = (num / 2) * 225500
+    elif (num % 2) == 1:
+        offset = 112750 + (num-1) / 2 * 225500
+    else:
+        print('get_window_offset: unknown error.', offset)
+        sys.exit()
+
+    return offset / sample_rate
+
+
+def get_transcript_for_window(song_id, dali_annot,window_secs,window_index):
+    '''
+    given a window in time where a song is cropped, find the associated transcript 
+    by going through labels word for word and adding them to the transcript.
+
+    additionally, for each window_index, find the offset from the start of the song
+    to adjust the timing values relative to the start of the cropped song.
+
     Input:
     dali_annot (DALI object) - created using entry.annotations['annot']
     window_secs (tuple) - (start of window in secs,end of window in secs)
+    window_index (int)  - index associated with the number of crops or associated segments created for the entire song.
+                          window relative to the start of the song.  used to create timing offset. 
     
     Return:
     transcript (string), word onset timing (list of floats)
     '''
+    import pdb
     transcript = ''
     onset_timing = []
+    offset = get_window_offset(window_index)
     for i in range(len(dali_annot['words'])):
         #find first full onset word
         word = dali_annot['words'][i]['text']
@@ -429,14 +453,15 @@ def get_transcript_for_window(song_id, dali_annot,window_secs):
         # word ends   before the end   of window 
         if word_time[0] > window_secs[0] and word_time[1] < window_secs[1]:
             transcript += (word + ' ')
-            onset_timing.append( word_time[0] )
+            word_time_with_offset = word_time[0] - offset
+            onset_timing.append( word_time_with_offset )
     
     song_list = {}
     song_list['paren'] = []
     song_list['replacement'] = []
     transcript_clean = clean_up_lyrics(transcript,song_id,song_list)
 
-    return transcript_clean, onset_timing
+    return transcript_clean, onset_timing, offset
 
 
 

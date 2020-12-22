@@ -27,6 +27,8 @@ TODO: For Prediction
 
 def append_timing(audio_filename,timing_list):
     '''
+    save wordonset.txt file of timing information for a file in jamendolyrics file format.
+
     Input:
     audio_filename (string) - filename of the audio file
     timing_list (list <float>) - word onset list
