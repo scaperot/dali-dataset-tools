@@ -342,18 +342,21 @@ def download_song(song_id, dali_info, audio_path, sample_rate):
 
     # download...
     errors = dali_code.get_audio(dali_info, audio_path, skip=[], keep=[song_id])
-    print(errors)
-    i = 0
-
-    # wait for download to finish...
-    while utilities.check_file(basename + '.mp3') != True and i < 10:
-        time.sleep(1)
-        i += 1
-        print('Waiting:',i,'seconds...')
-    if i == 10:
-        #try one more time...
-        errors = dali_code.get_audio(dali_info, audio_path, skip=[], keep=[song_id])
+    if len(errors) > 0:
         print(errors)
+        import pdb
+        pdb.set_trace()
+    
+    #i = 0
+    # wait for download to finish...
+    #while utilities.check_file(basename + '.mp3') != True and i < 10:
+    #    time.sleep(1)
+    #    i += 1
+    #    print('Waiting:',i,'seconds...')
+    #if i == 10:
+    #    #try one more time...
+    #    errors = dali_code.get_audio(dali_info, audio_path, skip=[], keep=[song_id])
+    #    print(errors)
 
     # convert to .wav and resample to sample_rate
     print('Creating', basename + '.wav')

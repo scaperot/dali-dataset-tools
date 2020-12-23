@@ -18,7 +18,7 @@ if __name__ == "__main__":
                    help='index of crop (overlapping crop pattern) window / song segment relative to the start of the song.')
     parser.add_argument('-w','--window', required=False,type=float,default=10.2268,
                    help='size of window of DALI song, to create a transcript')
-    parser.add_argument('-s','--song-id', required=False,type=str,default='3698c37beab64ec39196875d6972082',
+    parser.add_argument('-s','--song-id', required=False,type=str,default='3698c37beab64ec39196875d69720822',
                   help='DALI song id.  Default: 3698c37beab64ec39196875d69720822, ')
 
     args = parser.parse_args()
