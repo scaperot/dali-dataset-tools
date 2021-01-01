@@ -70,6 +70,10 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
     3. check for remove candidate characters
     4. check for space candidate characters
     '''
+    #if type(dirty_lyrics) == type(''):
+    #    print('clean_up_lyrics: first argument should be a list.')
+    #    sys.exit()
+
     paren_song_list       = song_lists['paren']            # get_parenthetical_char_songs()
     replacement_song_list = song_lists['replacement'] # get_replacement_char_songs()
     
@@ -94,7 +98,7 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
     #check if words contain parentheticals and song is just right, purge
     #if char_exists(lyrics,paren_list) and (paren_song_list.count(song_id) > 0):
         #TODO: print('purge parentheticals! and purge with spaces later')
-        #for c in file_replace_list:
+        #for c in file_eplace_list:
         #    regex = re.compile('['+c+']')
         #    lyrics = regex.sub(file_replace_dict[c],lyrics)
 
@@ -122,14 +126,13 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
         for c in remove_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub('',lyrics)
-
+    
     #check for space list
     if char_exists(lyrics,space_list):
         print('clean_up_lyrics: create characters with spaces!')
         for c in space_list:
             regex = re.compile('['+c+']')
             lyrics = regex.sub(' ',lyrics)
-
     #collapse spaces so there is only a single space between words/characters
     regex = re.compile('\ +')
     return regex.sub(' ',lyrics)
@@ -176,6 +179,42 @@ def get_transcript(song_id, annot_index, annot_type='paragraphs'):
     annot = dali_entry.annotations['annot']
     return annot[annot_type][annot_index]['text']
 
+def get_full_transcript_by_filename(fname):
+    '''
+    Input: 
+    file name of wav file.  assuming fname is formated as:
+    <DALI song ID>.wav
+
+    Return 
+    string - transcript from DALI metadata.
+    '''
+    #check that its a wav file
+    if not (fname[-4:]=='.wav'):
+        print('get_full_transcript_by_filename: not a wavfile:',fname)
+        sys.exit()
+
+    song_id = fname.split('.')[0]
+    return get_full_transcript(song_id)
+
+def get_full_transcript(song_id):
+
+    dali_path, audio_path, dali_info = dali_setup()
+
+    dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
+    dali_entry = dali_data[song_id]
+    dali_annot = dali_entry.annotations['annot']
+
+    transcript = ''
+    for i in range(len(dali_annot['paragraphs'])):
+        #find first full onset word
+        transcript += dali_annot['paragraphs'][i]['text']
+    
+    song_list = {}
+    song_list['paren'] = []
+    song_list['replacement'] = []
+    transcript_clean = clean_up_lyrics(transcript,song_id,song_list)
+
+    return transcript_clean
 
 def print_raw_transcript_by_index(index,print_type='paragraphs'):
 
@@ -426,6 +465,19 @@ def get_window_offset(num,sample_rate=22050):
 
     return offset / sample_rate
 
+def get_onset_timing(song_id):
+
+    dali_path, audio_path, dali_info = dali_setup()
+
+    dali_data = dali_code.get_the_DALI_dataset(dali_path,keep=[song_id])
+    dali_entry = dali_data[song_id]
+    dali_annot = dali_entry.annotations['annot']
+    onset_timing = []
+    for i in range(len(dali_annot['words'])):
+        #find first full onset word
+        word_time  = dali_annot['words'][i]['time'][0]
+        onset_timing.append( word_time )
+    return onset_timing
 
 def get_transcript_for_window(song_id, dali_annot,window_secs,window_index):
     '''
@@ -444,7 +496,6 @@ def get_transcript_for_window(song_id, dali_annot,window_secs,window_index):
     Return:
     transcript (string), word onset timing (list of floats)
     '''
-    import pdb
     transcript = ''
     onset_timing = []
     offset = get_window_offset(window_index)

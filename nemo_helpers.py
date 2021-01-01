@@ -1,5 +1,5 @@
 import numpy as np
-import os, argparse
+import os, argparse,json,sys
 import DALI as dali_code
 from DALI import utilities
 
@@ -22,8 +22,42 @@ TODO: For Prediction
 - shift by the size of the total samples (i.e. no overlap).
 
 '''
+def scrap_old_manifest_for_song_id(fname):
+    songid_list = []
+    val_set = []
+    with open(fname) as F:
+        for line in F:
+            val = json.loads(line)
+            val_set.append(val)
 
+    val_files = [t["audio_filepath"] for t in val_set]
+    for f in val_files:
+        f1 = f.split('/')[-1] #strip off path
+        f2 = f1.split('.wav')[0] #strip off extension
+        f3 = f2.split('_')[0] #strip off underscores for cropped files.
+        songid_list.append(f3)
+    return list(set(songid_list))
 
+def generate_audio_manifest(wav_path,audio_manifest_fname):
+    '''
+    generate NEMO audio manifest based on path to wav files.
+
+    Input:
+    wav_path - path to all wav files you want to add to manifest
+    audio_manifest_fname - name of file to generate (ideally a json extension)
+    TODO: check for .json
+
+    return 
+    N/A
+    '''
+    wav_filenames = glob.glob(os.path.join(wav_path,basename+'*.wav'))
+
+    for i in range(len(wav_filenames)):
+        audio_filename   = wav_filenames[i]
+        transcript = dali_helpers.get_full_transcript_by_filename(word_filenames[i])
+        append_transcript_nemo(audio_manifest_fname,audio_filename,10.2268,transcript)
+
+    return True
 
 def append_timing(audio_filename,timing_list):
     '''
@@ -37,8 +71,8 @@ def append_timing(audio_filename,timing_list):
     2. writes to basename.wordonset.txt (jamendolyric format)
     '''
     if audio_filename[-4:] != '.wav':
-        print('append_timing: error, do not support other file types.')
-        return False
+        print('append_timing: error, do not support other file types.',audio_filename)
+        sys.exit()
 
     base_filename = audio_filename[:-4]
     txt_filename  = base_filename + '.wordonset.txt'
