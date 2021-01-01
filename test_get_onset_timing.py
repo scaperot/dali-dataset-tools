@@ -18,6 +18,6 @@ if __name__ == "__main__":
 
     onset_timing = dali_helpers.get_onset_timing(song_id)
 
-    print(type(onset_timing), onset_timing)
+    print(len(onset_timing),'words')
 
 

@@ -212,7 +212,7 @@ def get_full_transcript(song_id):
     transcript = ''
     for i in range(len(dali_annot['paragraphs'])):
         #find first full onset word
-        transcript += dali_annot['paragraphs'][i]['text']
+        transcript += (dali_annot['paragraphs'][i]['text']+' ')
     
     song_list = {}
     song_list['paren'] = []

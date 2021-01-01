@@ -11,9 +11,9 @@ import dali_helpers
 
 import nemo_helpers
 '''
-1. take an old .json nemo manifest and file all of the unique song ids
-2. take those song id's and download them
-3. then create a new manifest with the full song names
+1. take a .json nemo manifest, find the song ids
+2. take those song id's and select 10 songs randomly
+3. then create a new manifest with the songs selected
 '''
 if __name__ == "__main__":
 
@@ -41,17 +41,15 @@ if __name__ == "__main__":
         sys.exit()
 
     songids = nemo_helpers.scrap_old_manifest_for_song_id(filename)
-    print(len(songids))
-    for i in songids:
-        print('song id:',i)
+    print('Found:',len(songids),'song ids.')
     
     dali_path, audio_path, dali_info = dali_helpers.dali_setup()
-
-    # download
+    ndxs = np.random.randint(len(songids),size=10)
+    
     print('saving new manifest as',args.new_filename)
-    for song_id in songids:
+    for ndx in ndxs:
+        song_id = songids[ndx]
         audio_filename = audio_path+'/'+song_id+'.wav'
-
 
         # if simple flag is set, do not download song and create wordonset files
         if not args.simple:
@@ -69,5 +67,3 @@ if __name__ == "__main__":
         # append to audio manifest
         transcript = dali_helpers.get_full_transcript(song_id)
         nemo_helpers.append_transcript_nemo(args.new_filename,audio_filename,0,transcript)
-
-
