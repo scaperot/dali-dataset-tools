@@ -1,4 +1,3 @@
-
 import soundfile as sf
 
 import os,time,sys,subprocess,librosa, csv, re
@@ -89,7 +88,8 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
     global_replace_dict={'&':' and ','`':"'"}
     global_replace_list = list(global_replace_dict.keys())
 
-    
+    numeric_replace_dict={'0':' zero ','1':' one ','2':' two ','3':' three ','4':' four ','5':' five ','6':' six ','7':' seven ','8':' eight ','9':' nine '}
+    numeric_replace_list = list(numeric_replace_dict.keys())
     # add chars to this that will be required to make spaces
     space_list = [',','-','.','?','!','"','(',')',':','_',';','*','[',']','{','}','<','>','/','#','$','%','@']
 
@@ -112,6 +112,11 @@ def clean_up_lyrics(dirty_lyrics,song_id, song_lists):
             regex = re.compile('['+c+']')
             lyrics = regex.sub(file_replace_dict[c],lyrics)
 
+    if char_exists(lyrics,numeric_replace_list):
+        print('clean_up_lyrics: numberic characters with alphabet versions!')
+        for c in numeric_replace_list:
+            regex = re.compile('['+c+']')
+            lyrics = regex.sub(numeric_replace_dict[c],lyrics)
 
 
     if char_exists(lyrics,global_replace_list):
